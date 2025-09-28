@@ -1,0 +1,50 @@
+# Build artifacts
+/build/
+/build-modules/
+/Testing/
+/demo/build/
+/server/build/
+
+# CMake cache and generated files
+CMakeCache.txt
+cmake_install.cmake
+CMakeFiles/
+*.cmake
+
+# Visual Studio generated files
+*.sln
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+*.opensdf
+*.sdf
+*.pdb
+*.obj
+*.ilk
+*.ipdb
+*.iobj
+*.idb
+*.tlog/
+*.recipe
+*.lastbuildstate
+
+# Binaries
+*.exe
+*.dll
+*.lib
+*.so
+*.dylib
+
+# Logs and temporary files
+*.log
+*.tmp
+*.cache
+
+# IDE settings
+.vscode/
+.idea/
+/.vs/
+
+# OS files
+Thumbs.db
+.DS_Store
