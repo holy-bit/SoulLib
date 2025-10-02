@@ -75,6 +75,12 @@ From there, explore:
 - `tools/MemoryVisualizer` to export current allocation statistics.
 - `tools/DagVisualizer` to graph frame scheduler dependencies.
 
+## Documentation
+
+- [Architecture Overview](docs/Architecture.md) — Core design principles and subsystem relationships
+- [API Reference](docs/BUILD_DOCUMENTATION.md) — Generate HTML documentation with Doxygen
+- [Release Notes v0.3.0](docs/RELEASE_NOTES_v0.3.0.md) — Latest changes and migration guide
+
 ## Contributing
 
 Contributions are welcome! See [`CONTRIBUTING.md`](CONTRIBUTING.md) for code style, PR workflow, and maintainer expectations. Open an issue or discussion before starting major work.
