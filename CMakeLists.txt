@@ -90,6 +90,7 @@ endif()
 
 if(SOULLIB_BUILD_TOOLS)
   add_subdirectory(tools/MemoryVisualizer)
+  add_subdirectory(tools/DagVisualizer)
 endif()
 
 if(SOULLIB_BUILD_DOCS)

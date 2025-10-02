@@ -1,6 +1,9 @@
 # SoulLib
 
-SoulLib is a modular C++20 toolkit that bundles coroutine-aware task scheduling, asynchronous file IO, dual-transport networking, container abstractions, memory tracking, and diagnostics. It is designed to slot into larger engines (e.g. **SoulBox**) while remaining consumable as a standalone utility library.
+![CI Status](https://github.com/holy-bit/SoulLib/workflows/SoulLib%20CI/badge.svg)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
+SoulLib is a modular C++20 toolkit that bundles coroutine-aware task scheduling, asynchronous file IO, dual-transport networking, container abstractions, memory tracking, and diagnostics. It is designed to slot into larger engines while remaining consumable as a standalone utility library.
 
 ## Highlights
 
@@ -42,7 +45,7 @@ Artifacts (`SoulLib.dll`, `SoulLib.lib`, `SoulLibTests.exe`, `SoulLibMemoryViz.e
 | `include/` | Public headers grouped by subsystem (Async, containers, FileSystem, Memory, Networking, Time, Debug). |
 | `src/` | Module implementations mirroring `include/`. |
 | `examples/` | Standalone samples (e.g., `ContainerMemoryExample.cpp`). |
-| `demo/` | Minimal demo application wiring networking and scheduling. |
+| `demo/` | Interactive console suite showcasing timers, memory analytics, async jobs, logging, and persistence. |
 | `test/` | GoogleTest suites organised per subsystem. |
 | `benchmarks/` | Google Benchmark microbenchmarks. |
 | `tools/` | Developer tools (`MemoryVisualizer`). |
@@ -68,7 +71,16 @@ int main() {
 From there, explore:
 
 - `examples/ContainerMemoryExample.cpp` for allocator tagging and SBO containers.
-- `demo/main.cpp` for real-time scheduling + networking.
+- `demo/main.cpp` for an interactive suite showcasing five subsystem scenarios.
 - `tools/MemoryVisualizer` to export current allocation statistics.
+- `tools/DagVisualizer` to graph frame scheduler dependencies.
+
+## Contributing
+
+Contributions are welcome! See [`CONTRIBUTING.md`](CONTRIBUTING.md) for code style, PR workflow, and maintainer expectations. Open an issue or discussion before starting major work.
+
+## License
+
+SoulLib is released under the [MIT License](LICENSE). See the LICENSE file for details.
 
 Happy hacking!

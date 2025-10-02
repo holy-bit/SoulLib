@@ -131,17 +131,20 @@ Durante el último ciclo se completaron los hitos más críticos de la fase “M
    * Consolidar el prototipo `SoulLibMemoryModules` como plantilla para futuras particiones, validado ya en MSVC 19.29 mediante `SOULLIB_EXPERIMENTAL_MODULES`.
     * Introducir Concepts/Ranges en APIs (ej. `SoulFlatMap` podría aceptar rangos `std::ranges::range`).
    * Estado actual: El ecosistema de contenedores (`SoulVector`, `SoulFlatMap`, `SoulSet`, `SoulMap`, `SoulMultiset`, `SoulMultimap`, `SoulUnorderedSet`, `SoulUnorderedMap`) ya opera con constructores e inserciones basados en ranges.
-    * Preparar actualización del `CMAKE_CXX_STANDARD` a 23 tras validar toolchains soportados en CI y sincronizar dependencias de SoulBox.
+   * Preparar actualización del `CMAKE_CXX_STANDARD` a 23 tras validar toolchains soportados en CI y sincronizar dependencias con los proyectos consumidores.
 2. **Tuning de Fiabilidad UDP**
    * ✅ Completado — retransmisión por canal integrada, ACK livianos y pruebas con pérdida simulada.
 3. **Integración CI/CD**
    * Automatizar ejecución de `SoulLibMemoryViz` y benchmarks comparativos en pipeline.
+   * **Estado (actualizado 2025-10-02)**: ✅ Completado — GitHub Actions workflow implementado con matriz multi-configuración (MSVC C++20/23, GCC, Clang), validación de tests, smoke tests de herramientas, y seguimiento de regresión de benchmarks.
 4. **Documentación API detallada**
    * Aprovechar la nueva configuración Doxygen para instrumentar headers críticos (Async, Networking, FileSystem) con comentarios `@brief`, `@param`, etc.
    * Estado: en curso — `Async/Task.h`, `time/FrameScheduler.h`, `FileSystem/Core/AsyncFileManager.h` y `Networking/NetworkManager.h` ya incluyen bloques documentados.
+   * **Novedad 2025-09-29**: Se enriqueció `Async/Task.h` con documentación detallada de `TaskScheduler`, `TaskToken` y las variantes de `Task`, habilitando mejor navegación en Doxygen.
 5. **Herramientas Avanzadas**
    * Extender MemoryVisualizer hacia Graphviz / UI interactiva.
    * Explorar visualización de DAGs programados en `FrameScheduler`.
+   * **Estado (actualizado 2025-10-02)**: ✅ Completado — El CLI `SoulLibDagViz` exporta grafos de dependencias de `FrameScheduler` a formato DOT, habilitando análisis visual de orden de ejecución y cuellos de botella. `SoulLibMemoryViz` permanece operativo para snapshots de memoria.
 
 ---
 
@@ -154,21 +157,23 @@ Durante el último ciclo se completaron los hitos más críticos de la fase “M
    * Añadir opción CMake `SOULLIB_ENABLE_CPP23` que active compilación con C++23 en entornos controlados. ✅ Implementado y configurado en el build local.
    * Instrumentar CI para ejecutar matrices mixtas (C++20 estable / C++23 experimental) antes del cambio definitivo.
    * Resultado preliminar: la configuración Debug en MSVC 19.29 compiló correctamente y ejecutó 95/95 pruebas unitarias con la opción activada; adicionalmente, el objetivo experimental `SoulLibMemoryModules` se genera con éxito utilizando módulos C++20.
+   * **Validación 2025-09-29**: Se automatizó el flujo (`build-cpp23`) y se documentó en `docs/CXX23_Migration_Checklist.md` junto con los comandos de referencia.
 3. **Adopción de Características Graduales**
    * Priorizar `std::expected` para reemplazar `Result` locales en subsistemas asincrónicos y de IO.
    * Evaluar `std::mdspan` para estructuras de datos en benchmarks de containers y memoria.
    * Analizar beneficios de `std::print` en herramientas (manteniendo formato de bajo nivel en runtime).
-4. **Sincronización con SoulBox**
-   * Coordinar con el equipo de SoulBox para asegurar compatibilidad binaria y actualización simultánea del estándar.
+4. **Sincronización con proyectos consumidores**
+   * Coordinar con los equipos integradores para asegurar compatibilidad binaria y actualización simultánea del estándar.
    * Definir ventana de congelamiento de API para mitigar riesgos durante la transición.
 5. **Cierre y Retroalimentación**
    * Medir tiempos de compilación y desempeño antes/después del cambio.
    * Documentar lecciones aprendidas y ajustar guías de estilo para reflejar nuevas primitivas del estándar.
+   * **Acción reciente**: Se creó `docs/CXX23_Migration_Checklist.md` para centralizar métricas, comandos y próximos hitos.
 
 ---
 
 ## **6. Conclusiones**
 
-SoulLib alcanzó el “Salto Asíncrono” previsto: IO no bloqueante, scheduler con corrutinas, red dual, toolchain C++20 y tooling de memoria. Los pendientes de largo plazo se centran en refinamientos (conceptos/rangos, módulos, fiabilidad avanzada) y en la madurez del ecosistema (CI, documentación generada automáticamente). La base actual es estable para integrarse en SoulBox y habilita futuras migraciones a C++20/23 sin riesgos significativos.  
+SoulLib alcanzó el “Salto Asíncrono” previsto: IO no bloqueante, scheduler con corrutinas, red dual, toolchain C++20 y tooling de memoria. Los pendientes de largo plazo se centran en refinamientos (conceptos/rangos, módulos, fiabilidad avanzada) y en la madurez del ecosistema (CI, documentación generada automáticamente). La validación continua del perfil C++23 (build `build-cpp23`, 95/95 tests verdes) refuerza que la base actual es estable para integrarse en proyectos externos y habilita futuras migraciones a C++20/23 sin riesgos significativos.  
 
 > **Recomendación inmediata**: priorizar la formalización de documentación Doxygen por subsistema y la investigación de módulos C++20, manteniendo en paralelo pruebas de estrés de networking.
