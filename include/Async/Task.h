@@ -35,14 +35,26 @@ struct TaskPromiseVoid;
 
 } // namespace detail
 
+/**
+ * @brief Opaque handle representing a scheduled coroutine and its completion state.
+ * @details Tokens allow callers to express explicit dependencies between tasks without exposing
+ *          implementation details of the underlying coroutine handle. They can be stored, copied,
+ *          and later passed back into the scheduler or frame orchestration utilities.
+ */
 class TaskToken {
 public:
     TaskToken() = default;
 
     explicit TaskToken(const std::shared_ptr<detail::TaskStateBase>& state) noexcept;
 
+    /**
+     * @brief Checks if the token references an active task state.
+     */
     [[nodiscard]] bool valid() const noexcept;
 
+    /**
+     * @brief Exposes the underlying state for advanced instrumentation hooks.
+     */
     [[nodiscard]] const std::shared_ptr<detail::TaskStateBase>& state() const noexcept;
 
 private:
@@ -52,6 +64,12 @@ private:
 template <typename T = void>
 class Task;
 
+/**
+ * @brief Multi-threaded coroutine scheduler that owns a worker pool and dependency graph.
+ * @details Tasks scheduled here can express explicit dependency chains via `TaskToken`s. The
+ *          scheduler ensures continuations resume on the pool threads and exposes blocking APIs for
+ *          shutdown or synchronous waiting in tests and tooling.
+ */
 class TaskScheduler {
 public:
     explicit TaskScheduler(std::size_t workerCount = 0);
@@ -63,18 +81,46 @@ public:
     TaskScheduler(TaskScheduler&&) = delete;
     TaskScheduler& operator=(TaskScheduler&&) = delete;
 
+    /**
+     * @brief Blocks the calling thread until the given token resolves or throws.
+     * @param token Handle previously returned by `schedule` or `run_async`.
+     */
     void wait(const TaskToken& token);
 
+    /**
+     * @brief Starts the worker threads and processes queued jobs until `stop` is invoked.
+     */
     void run();
+
+    /**
+     * @brief Requests cooperative shutdown of all workers and wakes any waiting threads.
+     */
     void stop();
 
+    /**
+     * @brief Registers a coroutine with optional dependencies and returns a tracked task.
+     * @tparam T Result type produced by the coroutine.
+     * @param task Coroutine ready to execute (typically created via `co_return`).
+     * @param dependencies Optional list of tokens that must complete before this task begins.
+     * @return Task wrapper re-bound to this scheduler instance.
+     */
     template <typename T>
     Task<T> schedule(Task<T>&& task, std::span<const TaskToken> dependencies = {});
 
+    /**
+     * @brief Executes a callable on the worker pool and returns an awaitable task.
+     * @tparam Func Callable type (lambda, function, functor) executed on a worker thread.
+     * @tparam Result Inferred return type of the callable.
+     * @param func Callable to run asynchronously.
+     * @return Task that resolves when the callable finishes or throws.
+     */
     template <typename Func,
               typename Result = std::invoke_result_t<std::decay_t<Func>>>
     Task<Result> run_async(Func&& func);
 
+    /**
+     * @brief Resumes a coroutine on the scheduler, typically used by continuations.
+     */
     void resume_coroutine(std::coroutine_handle<> handle);
 
 private:
@@ -181,6 +227,13 @@ struct TaskPromiseVoid {
 
 } // namespace detail
 
+/**
+ * @brief Awaitable wrapper produced by SoulLib coroutines.
+ * @tparam T Result type returned when the coroutine completes (void allowed).
+ * @details Tasks can be awaited (`co_await`), waited via `get()`, or converted to `TaskToken`
+ *          handles for dependency tracking. Movement transfers ownership of the state; copying is
+ *          deliberately disallowed to avoid double resumption.
+ */
 template <typename T>
 class Task {
 public:
@@ -204,10 +257,17 @@ public:
 
     ~Task() = default;
 
+    /**
+     * @brief Indicates whether the coroutine has already finished without suspending.
+     */
     bool await_ready() const noexcept {
         return m_state && m_state->completed;
     }
 
+    /**
+     * @brief Registers a continuation and resumes the producer coroutine if needed.
+     * @param awaiting Awaiter coroutine to resume once the task completes.
+     */
     void await_suspend(std::coroutine_handle<> awaiting) const {
         m_state->add_continuation(awaiting);
         auto* baseState = static_cast<detail::TaskStateBase*>(m_state.get());
@@ -220,6 +280,9 @@ public:
         }
     }
 
+    /**
+     * @brief Retrieves the final value, rethrowing any stored exception.
+     */
     T await_resume() {
         if (m_state->exception) {
             std::rethrow_exception(m_state->exception);
@@ -227,6 +290,10 @@ public:
         return m_state->extract();
     }
 
+    /**
+     * @brief Synchronously waits for completion and returns the produced value.
+     * @note Useful for bridging into legacy synchronous code or unit tests.
+     */
     T get() {
         if (m_state && !m_state->completed) {
             auto* baseState = static_cast<detail::TaskStateBase*>(m_state.get());
@@ -247,10 +314,16 @@ public:
         return m_state->extract();
     }
 
+    /**
+     * @brief Creates a dependency token to wire this task into other schedules.
+     */
     [[nodiscard]] TaskToken token() const noexcept {
         return TaskToken{m_state};
     }
 
+    /**
+     * @brief Exposes the shared state for advanced diagnostics.
+     */
     [[nodiscard]] const std::shared_ptr<detail::TaskState<T>>& state() const noexcept {
         return m_state;
     }
@@ -259,6 +332,9 @@ private:
     std::shared_ptr<detail::TaskState<T>> m_state;
 };
 
+/**
+ * @brief `void` specialisation that mirrors the general task semantics without a return value.
+ */
 template <>
 class Task<void> {
 public:
@@ -282,10 +358,17 @@ public:
 
     ~Task() = default;
 
+    /**
+     * @brief Indicates whether the coroutine has already finished without suspending.
+     */
     bool await_ready() const noexcept {
         return m_state && m_state->completed;
     }
 
+    /**
+     * @brief Registers a continuation and resumes the producer coroutine if needed.
+     * @param awaiting Awaiter coroutine to resume once the task completes.
+     */
     void await_suspend(std::coroutine_handle<> awaiting) const {
         m_state->add_continuation(awaiting);
         auto* baseState = static_cast<detail::TaskStateBase*>(m_state.get());
@@ -298,6 +381,9 @@ public:
         }
     }
 
+    /**
+     * @brief Propagates any stored exception once the coroutine completes.
+     */
     void await_resume() {
         if (m_state->exception) {
             std::rethrow_exception(m_state->exception);
@@ -305,6 +391,9 @@ public:
         m_state->extract();
     }
 
+    /**
+     * @brief Synchronously waits for completion to aid interop with blocking code.
+     */
     void get() {
         if (m_state && !m_state->completed) {
             auto* baseState = static_cast<detail::TaskStateBase*>(m_state.get());
@@ -325,10 +414,16 @@ public:
         m_state->extract();
     }
 
+    /**
+     * @brief Creates a dependency token to wire this task into other schedules.
+     */
     [[nodiscard]] TaskToken token() const noexcept {
         return TaskToken{m_state};
     }
 
+    /**
+     * @brief Exposes the shared state for advanced diagnostics.
+     */
     [[nodiscard]] const std::shared_ptr<detail::TaskState<void>>& state() const noexcept {
         return m_state;
     }

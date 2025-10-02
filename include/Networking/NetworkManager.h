@@ -13,6 +13,10 @@ namespace soul::net {
 
 /**
  * @brief High level orchestrator for dual (UDP/TCP) transport with reliability metadata.
+ * @details The manager owns no sockets directly; instead it coordinates transport objects and a
+ *          shared task scheduler. Each packet is routed to the appropriate transport based on its
+ *          declared delivery guarantee. UDP channels can opt into retransmission without switching
+ *          to TCP by leveraging sequence numbers and ACK masks managed internally.
  */
 class NetworkManager {
 public:
@@ -30,20 +34,23 @@ public:
      * @brief Sends a packet using the transport that matches its delivery guarantee.
      * @param endpoint Remote endpoint to target.
      * @param packet Payload + metadata to transmit. Ownership transfers to the scheduler.
+     * @return Awaitable that completes once the packet has been queued for transmission (and, for
+     *         reliable UDP, once bookkeeping is initialised).
      */
     soul::async::Task<void> send(const Endpoint& endpoint, Packet packet);
     /**
      * @brief Polls all transports for the next available packet.
-     * @return Optional tuple of origin endpoint and received packet. `std::nullopt` when idle.
+     * @return Awaitable that resolves to an optional tuple of origin endpoint and received packet.
+     *         The result is `std::nullopt` when no data is available.
      */
     soul::async::Task<std::optional<std::pair<Endpoint, Packet>>> receive();
 
     /**
-     * @brief Enables or disables UDP-layer retransmission for the given logical channel.
-     *
-     * When enabled, packets sent with `DeliveryGuarantee::Reliable` on this channel ride on top of
-     * the UDP transport using sequence/ACK metadata. Retransmissions are orchestrated via the
-     * shared task scheduler.
+    * @brief Enables or disables UDP-layer retransmission for the given logical channel.
+    *
+    * When enabled, packets sent with `DeliveryGuarantee::Reliable` on this channel ride on top of
+    * the UDP transport using sequence/ACK metadata. Retransmissions are orchestrated via the
+    * shared task scheduler.
      */
     void enable_udp_reliability(std::uint16_t channel, bool enabled);
 
