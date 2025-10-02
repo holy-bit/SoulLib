@@ -8,25 +8,11 @@
 #include <vector>
 
 #include "Async/Task.h"
+#include "FileSystem/IO/FileResult.h"
 
 namespace soul::filesystem::io {
 
-/**
- * @brief Result payload returned after an asynchronous read operation.
- */
-struct ReadFileResult {
-    std::vector<std::byte> data;      ///< Raw file contents; empty on failure.
-    std::filesystem::path path;       ///< Absolute path that was read.
-    std::error_code error;            ///< Error code describing failure (if any).
-};
-
-/**
- * @brief Result payload returned after an asynchronous write operation.
- */
-struct WriteFileResult {
-    std::filesystem::path path; ///< Destination that was written.
-    std::error_code error;      ///< Error code describing failure (if any).
-};
+// ReadFileResult and WriteFileResult now defined in FileResult.h (C++20/23 compatible)
 
 /**
  * @brief Interface that exposes asynchronous file I/O operations.
