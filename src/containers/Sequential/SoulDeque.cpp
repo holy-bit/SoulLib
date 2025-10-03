@@ -1,6 +1,7 @@
 #include "containers/Sequential/SoulDeque.h"
 #include <algorithm>
 #include <iterator>
+#include <string>
 
 namespace ContainerSystem::Sequential {
 

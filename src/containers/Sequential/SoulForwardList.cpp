@@ -1,6 +1,7 @@
 #include "containers/Sequential/SoulForwardList.h"
 #include <algorithm>
 #include <iterator> // Para std::back_inserter
+#include <string>
 
 namespace ContainerSystem::Sequential {
 
