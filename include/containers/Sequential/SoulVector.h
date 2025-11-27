@@ -90,6 +90,18 @@ public:
         size_ = static_cast<std::size_t>(newEnd - begin());
     }
 
+    T* erase(const T* pos) {
+        T* p = const_cast<T*>(pos);
+        if (p < begin() || p >= end()) return end();
+        
+        for (T* it = p; it < end() - 1; ++it) {
+            *it = std::move(*(it + 1));
+        }
+        (end() - 1)->~T();
+        --size_;
+        return p;
+    }
+
     std::vector<T> getAll() const override {
         std::vector<T> result;
         result.reserve(size_);

@@ -15,6 +15,12 @@ endif()
 include(GNUInstallDirs)
 include(FetchContent)
 
+FetchContent_Declare(
+    json
+    URL https://github.com/nlohmann/json/releases/download/v3.11.3/json.tar.xz
+)
+FetchContent_MakeAvailable(json)
+
 option(SOULLIB_BUILD_TESTS "Build SoulLib test suite" ON)
 option(SOULLIB_BUILD_BENCHMARKS "Build SoulLib benchmark suite" ON)
 option(SOULLIB_BUILD_TOOLS "Build SoulLib developer tools" ON)
@@ -40,6 +46,7 @@ set_target_properties(SoulLib PROPERTIES
   OUTPUT_NAME "SoulLib"
   CXX_STANDARD ${SOULLIB_CXX_STANDARD}
 )
+target_link_libraries(SoulLib PUBLIC nlohmann_json::nlohmann_json)
 add_library(Soul::SoulLib ALIAS SoulLib)
 
 add_library(SoulLibStatic STATIC ${SOULLIB_SOURCES})
@@ -47,6 +54,7 @@ set_target_properties(SoulLibStatic PROPERTIES
   OUTPUT_NAME "SoulLib"
   CXX_STANDARD ${SOULLIB_CXX_STANDARD}
 )
+target_link_libraries(SoulLibStatic PUBLIC nlohmann_json::nlohmann_json)
 add_library(Soul::SoulLibStatic ALIAS SoulLibStatic)
 
 target_include_directories(SoulLib
@@ -130,41 +138,43 @@ if(SOULLIB_EXPERIMENTAL_MODULES)
   endif()
 endif()
 
-install(TARGETS SoulLib SoulLibStatic
-  EXPORT SoulLibTargets
-  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-)
+if(SOULLIB_INSTALL)
+  install(TARGETS SoulLib SoulLib SoulLibStatic
+    EXPORT SoulLibTargets
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  )
 
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/
-  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-)
+  install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+  )
 
-install(EXPORT SoulLibTargets
-  FILE SoulLibTargets.cmake
-  NAMESPACE Soul::
-  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/SoulLib
-)
+  install(EXPORT SoulLibTargets
+    FILE SoulLibTargets.cmake
+    NAMESPACE Soul::
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/SoulLib
+  )
 
-include(CMakePackageConfigHelpers)
+  include(CMakePackageConfigHelpers)
 
-write_basic_package_version_file(
-  ${CMAKE_CURRENT_BINARY_DIR}/SoulLibConfigVersion.cmake
-  VERSION ${PROJECT_VERSION}
-  COMPATIBILITY SameMajorVersion
-)
+  write_basic_package_version_file(
+    ${CMAKE_CURRENT_BINARY_DIR}/SoulLibConfigVersion.cmake
+    VERSION ${PROJECT_VERSION}
+    COMPATIBILITY SameMajorVersion
+  )
 
-configure_package_config_file(
-  ${CMAKE_CURRENT_SOURCE_DIR}/cmake/SoulLibConfig.cmake.in
-  ${CMAKE_CURRENT_BINARY_DIR}/SoulLibConfig.cmake
-  INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/SoulLib
-)
+  configure_package_config_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/cmake/SoulLibConfig.cmake.in
+    ${CMAKE_CURRENT_BINARY_DIR}/SoulLibConfig.cmake
+    INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/SoulLib
+  )
 
-install(FILES
-  ${CMAKE_CURRENT_BINARY_DIR}/SoulLibConfig.cmake
-  ${CMAKE_CURRENT_BINARY_DIR}/SoulLibConfigVersion.cmake
-  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/SoulLib
-)
+  install(FILES
+    ${CMAKE_CURRENT_BINARY_DIR}/SoulLibConfig.cmake
+    ${CMAKE_CURRENT_BINARY_DIR}/SoulLibConfigVersion.cmake
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/SoulLib
+  )
+endif()
 
 
