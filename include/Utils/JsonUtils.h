@@ -4,10 +4,12 @@
 #include <optional>
 #include <nlohmann/json.hpp>
 
+#include <SoulLibExport.h>
+
 namespace SoulLib {
 namespace Utils {
 
-class JsonUtils {
+class SOULLIB_API JsonUtils {
 public:
     using json = nlohmann::json;
 

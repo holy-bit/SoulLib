@@ -41,12 +41,13 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 file(GLOB_RECURSE SOULLIB_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/**/*.cpp")
 list(FILTER SOULLIB_SOURCES EXCLUDE REGEX ".*/src/Memory/Modules/MemoryStatisticsImport\\.cpp$")
 
-add_library(SoulLib SHARED ${SOULLIB_SOURCES})
+add_library(SoulLib STATIC ${SOULLIB_SOURCES})
 set_target_properties(SoulLib PROPERTIES
   OUTPUT_NAME "SoulLib"
   CXX_STANDARD ${SOULLIB_CXX_STANDARD}
 )
 target_link_libraries(SoulLib PUBLIC nlohmann_json::nlohmann_json)
+target_compile_definitions(SoulLib PUBLIC SOULLIB_STATIC)
 add_library(Soul::SoulLib ALIAS SoulLib)
 
 add_library(SoulLibStatic STATIC ${SOULLIB_SOURCES})
